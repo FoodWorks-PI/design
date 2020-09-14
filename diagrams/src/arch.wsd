@@ -1,0 +1,58 @@
+@startuml
+'!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+!include <c4/C4_Container.puml>  
+
+'ref http://plantuml.com/stdlib
+!include <office/Users/user.puml>
+!include <office/Users/mobile_user.puml>
+
+
+
+!define Rel_BI(e_from,e_to, e_label) Rel_(e_from,e_to, e_label, "<->")
+!define Rel_BI(e_from,e_to, e_label, e_techn) Rel_(e_from,e_to, e_label, e_techn, "<-->")
+
+!define Rel_L_BI(e_from,e_to, e_label) Rel_(e_from,e_to, e_label, "<-LEFT->")
+!define Rel_L_BI(e_from,e_to, e_label, e_techn) Rel_(e_from,e_to, e_label, e_techn, "<-LEFT->")
+
+
+title Container diagram for Foodworks
+
+Person(customer_personal  , Client , "<$mobile_user>\n A custome with a personal account." )
+Person(customer_restaurant  , Restaurant Owner , "<$user>\n A customer with a restaurant account." )
+
+System_Boundary(c1, "Foodworks DMZ") {
+    Container(proxy, "OathKeeper", "Golang", "Authorizes external and internal (cross service) http Requests")
+}
+
+System_Boundary(c2, "Foodworks") {
+    Container(spa_client, "Client Single-Page App", "Javascript, React", "Provides all functionality to regular customers, mobile optimized")
+    Container(spa_restaurant, "Restaurant Single-Page App", "JavaScript, React", "Provides all functionality to restaurant owners, desktop optimized")
+    Container(kratos, "Kratos", "Golang", "Provides services for user sign-in/sign-up flows using OAUTH 2")
+    Container(backend_api, "Foodworks API", "Golang, GraphQL", "Provides a GraphQL API to the web apps")
+    ContainerDb(database, "Database", "SQL Database", "Stores user data information")
+}
+
+System_Ext(stripe, "Stripe API", "Processes user payments")
+System_Ext(google, "Google API", "Validates and provides identity for social authentication")
+System_Ext(facebook, "Facebook API", "Validates and provides identity for social authentication")
+
+Rel(customer_personal, proxy, "Uses", "HTTPS")
+Rel(customer_restaurant, proxy, "Uses", "HTTPS")
+
+Rel(kratos, google, "Uses", "HTTPS")
+Rel(kratos, facebook, "Uses", "HTTPS")
+
+
+Rel_BI(proxy, spa_client, "Uses", "HTTPS")
+Rel_BI(proxy, spa_restaurant, "Uses", "HTTPS")
+
+Rel(proxy, backend_api, "Uses", "HTTPS")
+Rel(proxy,kratos, "Uses", "HTTPS")
+
+Rel_L_BI(backend_api, stripe, "Uses", "HTTPS")
+Rel(backend_api, database, "Uses", "PGX")
+Rel(kratos,database, "Uses", "PGX")
+
+
+@enduml
+
