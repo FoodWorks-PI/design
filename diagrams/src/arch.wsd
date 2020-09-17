@@ -1,6 +1,8 @@
 @startuml
 '!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
-!include <c4/C4_Container.puml>  
+' !include https://github.com/plantuml/plantuml-stdlib/C4/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml/plantuml-stdlib/master/C4/C4_Container.puml
+' !include <c4/C4_Container.puml>  
 
 'ref http://plantuml.com/stdlib
 !include <office/Users/user.puml>
@@ -13,6 +15,8 @@
 
 !define Rel_L_BI(e_from,e_to, e_label) Rel_(e_from,e_to, e_label, "<-LEFT->")
 !define Rel_L_BI(e_from,e_to, e_label, e_techn) Rel_(e_from,e_to, e_label, e_techn, "<-LEFT->")
+
+!define Rel_D_BI(e_from,e_to, e_label) Rel_(e_from,e_to, e_label, "<-DOWN->")
 
 
 title Container diagram for Foodworks
@@ -30,6 +34,7 @@ System_Boundary(c2, "Foodworks") {
     Container(kratos, "Kratos", "Golang", "Provides services for user sign-in/sign-up flows using OAUTH 2")
     Container(backend_api, "Foodworks API", "Golang, GraphQL", "Provides a GraphQL API to the web apps")
     ContainerDb(database, "Database", "SQL Database", "Stores user data information")
+    ContainerQueue(redis, "PUB/SUB Provider", "Redis", "Provides support for aync events")
 }
 
 System_Ext(stripe, "Stripe API", "Processes user payments")
@@ -45,6 +50,8 @@ Rel(kratos, facebook, "Uses", "HTTPS")
 
 Rel_BI(proxy, spa_client, "Uses", "HTTPS")
 Rel_BI(proxy, spa_restaurant, "Uses", "HTTPS")
+
+Rel_D_BI(backend_api, redis, "Uses")
 
 Rel(proxy, backend_api, "Uses", "HTTPS")
 Rel(proxy,kratos, "Uses", "HTTPS")
